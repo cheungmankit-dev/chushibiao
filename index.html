@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSE中文範文自學檢測站</title>
+    <script src="questions.js"></script>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 15px;
+        }
+        
+        /* 學生登入初始畫面修改 */
+        #login-screen {
+            text-align: center;
+            padding: 10px 0;
+        }
+        .form-group {
+            margin: 20px auto;
+            text-align: left;
+            max-width: 400px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 1.05rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #34495e;
+        }
+        .student-input {
+            font-size: 1.1rem;
+            padding: 12px 15px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .student-input:focus {
+            border-color: #3498db;
+        }
+        .login-tip {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+
+        #quiz-screen, #result-screen {
+            display: none;
+        }
+        .progress-bar {
+            background-color: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background-color: #3498db;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .quiz-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+        .question-box {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 1.05rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #4a5568;
+        }
+        .option-btn:hover:not(:disabled) {
+            background-color: #f7fafc;
+            border-color: #cbd5e0;
+        }
+        .option-btn.selected {
+            background-color: #ebf8ff;
+            border-color: #4299e1;
+            color: #2b6cb0;
+            font-weight: bold;
+        }
+        .option-btn.correct {
+            background-color: #f0fff4;
+            border-color: #38a169;
+            color: #276749;
+            font-weight: bold;
+        }
+        .option-btn.incorrect {
+            background-color: #fff5f5;
+            border-color: #e53e3e;
+            color: #9b2c2c;
+        }
+        .btn-primary {
+            display: block;
+            width: 100%;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+        .btn-primary:disabled {
+            background-color: #cbd5e0;
+            cursor: not-allowed;
+        }
+        .explanation-box {
+            margin-top: 20px;
+            padding: 15px 20px;
+            background-color: #f8fafc;
+            border-left: 4px solid #64748b;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #334155;
+            display: none;
+        }
+        .explanation-title {
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        
+        /* 截圖專用：證書式成績單樣式 */
+        .cert-name-box {
+            background-color: #f8fafc;
+            border: 2px dashed #3498db;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            line-height: 1.8;
+        }
+        .score-display {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 20px 0;
+        }
+        .score-num {
+            font-size: 4rem;
+            color: #e74c3c;
+        }
+        .comment-box {
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+        /* 上傳狀態提示樣式 */
+        .upload-status {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>DSE中文指定文言範文自學檢測站</h1>
+
+    <div id="login-screen">
+        <div class="form-group">
+            <label for="student-class-input">班別：</label>
+            <input type="text" id="student-class-input" class="student-input" placeholder="例如：5A" autocomplete="off">
+        </div>
+        <div class="form-group">
+            <label for="student-name-input">姓名：</label>
+            <input type="text" id="student-name-input" class="student-input" placeholder="例如：陳小明" autocomplete="off">
+        </div>
+        <div class="form-group">
+            <label for="student-id-input">學號（兩位數字）：</label>
+            <input type="text" id="student-id-input" class="student-input" placeholder="例如：01 或 23" autocomplete="off">
+        </div>
+        
+        <div class="form-group">
+            <label for="quiz-mode-input">選擇指定自學題型：</label>
+            <select id="quiz-mode-input" class="student-input" style="background-color: white;">
+                <option value="mixed">🔄 混合四種題型（隨機 20 題）</option>
+                <option value="vocab">📝 第一部分：字詞解釋（隨機 20 題）</option>
+                <option value="comprehension">📖 第二部分：內容理解（隨機 20 題）</option>
+                <option value="theme">💡 第三部分：主題與思想（全共 15 題）</option>
+                <option value="rhetoric_style">🎨 第四及五部分：修辭與寫作手法（隨機 20 題）</option>
+            </select>
+        </div>
+
+        <p class="login-tip">※請務必填寫正確資料，資料將用於老師統計自學進度及產生成績截圖※</p>
+        <button class="btn-primary" style="max-width: 250px; margin: 0 auto;" onclick="startQuiz()">開始自學測驗 🚀</button>
+    </div>
+
+    <div id="quiz-screen">
+        <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        
+        <div class="quiz-info">
+            <span id="question-number">題目載入中...</span>
+            <span id="current-score-info">目前得分：0</span>
+        </div>
+
+        <div id="question-text" class="question-box"></div>
+        <div id="options-container" class="options-list"></div>
+
+        <button id="action-btn" class="btn-primary" onclick="handleAction()" disabled>檢查答案</button>
+
+        <div id="explanation-container" class="explanation-box">
+            <div class="explanation-title">💡 題目解析：</div>
+            <div id="explanation-text"></div>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <div id="cert-student-name" class="cert-name-box"></div>
+        
+        <div class="score-display">
+            測驗得分：<span id="final-score" class="score-num">0</span> / <span id="total-score-count">20</span>
+        </div>
+        
+        <div id="upload-status-text" class="upload-status">正在自動同步成績至老師的系統... ⏳</div>
+        
+        <div id="teacher-comment" class="comment-box"></div>
+        
+        <button class="btn-primary" onclick="location.reload()">重新挑戰 🔄</button>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // 請在此處貼上你從 Google Apps Script 複製的網頁應用程式 URL
+    // ==========================================
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwBldleSSY1IdRNIb3s58QqKfJzny23dc5oOrHBzhsmoAIV3gY8dtNQ7mcNyOVwBEDPYg/exec";
+
+    // 變數宣告
+    let studentClass = "";
+    let studentName = "";
+    let studentId = "";
+    let selectedQuestions = [];
+    let currentIndex = 0;
+    let currentScore = 0;
+    let hasChecked = false;
+    let userSelectedIndex = null;
+
+    // 啟動測驗：驗證輸入、根據模式篩選並隨機出題
+    function startQuiz() {
+        const classInput = document.getElementById("student-class-input").value.trim();
+        const nameInput = document.getElementById("student-name-input").value.trim();
+        const idInput = document.getElementById("student-id-input").value.trim();
+        const modeInput = document.getElementById("quiz-mode-input").value;
+        
+        if (!classInput || !nameInput || !idInput) {
+            alert("請填寫所有欄位（班別、姓名、學號），以便順利登記自學進度！");
+            return;
+        }
+        
+        // 取得題庫來源
+        const sourcePool = typeof quizQuestions !== 'undefined' ? quizQuestions : (typeof allQuestions !== 'undefined' ? allQuestions : []);
+        if (sourcePool.length === 0) {
+            alert("找不到題庫資料，請確認 questions.js 是否正確載入。");
+            return;
+        }
+
+        // 依據學生選定的題型進行精準裁切
+        let filteredPool = [];
+        let modeLabel = "";
+
+        if (modeInput === "vocab") {
+            filteredPool = sourcePool.slice(0, 35); // 1-35題：字詞解釋
+            modeLabel = "【字詞解釋】";
+        } else if (modeInput === "comprehension") {
+            filteredPool = sourcePool.slice(35, 60); // 36-60題：內容理解
+            modeLabel = "【內容理解】";
+        } else if (modeInput === "theme") {
+            filteredPool = sourcePool.slice(60, 75); // 61-75題：主題思想（全共15題）
+            modeLabel = "【主題思想】";
+        } else if (modeInput === "rhetoric_style") {
+            filteredPool = sourcePool.slice(75, 100); // 76-100題：修辭與寫作手法
+            modeLabel = "【修辭與寫作】";
+        } else {
+            filteredPool = [...sourcePool]; // 1-100題：全混合
+            modeLabel = "【混合題型】";
+        }
+
+        // 將題型標記自動附加在班別後，讓老師的 Google Sheet 後台一目了然
+        studentClass = classInput + " " + modeLabel;
+        studentName = nameInput;
+        studentId = idInput;
+
+        // 隨機抽選 20 題（若題型總數不足 20 題則全抽，如主題思想 15 題）
+        const targetCount = Math.min(20, filteredPool.length);
+        selectedQuestions = filteredPool.sort(() => 0.5 - Math.random()).slice(0, targetCount);
+
+        // 動態將總題數填入結算網頁介面
+        document.getElementById("total-score-count").innerText = selectedQuestions.length;
+
+        // 切換顯示版面
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("quiz-screen").style.display = "block";
+
+        // 載入第一題
+        showQuestion();
+    }
+
+    // 顯示題目
+    function showQuestion() {
+        hasChecked = false;
+        userSelectedIndex = null;
+        
+        document.getElementById("explanation-container").style.display = "none";
+        const actionBtn = document.getElementById("action-btn");
+        actionBtn.innerText = "檢查答案";
+        actionBtn.disabled = true;
+
+        const total = selectedQuestions.length;
+        document.getElementById("progress-fill").style.width = `${(currentIndex / total) * 100}%`;
+        document.getElementById("question-number").innerText = `題目：${currentIndex + 1} / ${total}`;
+        document.getElementById("current-score-info").innerText = `目前得分：${currentScore}`;
+
+        const currentQ = selectedQuestions[currentIndex];
+        
+        const qText = currentQ.question || currentQ.q;
+        const opts = currentQ.options || currentQ.a;
+
+        document.getElementById("question-text").innerText = qText;
+
+        const optionsContainer = document.getElementById("options-container");
+        optionsContainer.innerHTML = "";
+
+        opts.forEach((opt, idx) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerText = opt;
+            btn.onclick = () => selectOption(idx);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    // 選擇選項
+    function selectOption(index) {
+        if (hasChecked) return;
+        
+        userSelectedIndex = index;
+        const buttons = document.querySelectorAll(".option-btn");
+        buttons.forEach((btn, idx) => {
+            if (idx === index) {
+                btn.classList.add("selected");
+            } else {
+                btn.classList.remove("selected");
+            }
+        });
+
+        document.getElementById("action-btn").disabled = false;
+    }
+
+    // 處理按鈕點擊
+    function handleAction() {
+        if (!hasChecked) {
+            checkAnswer();
+        } else {
+            currentIndex++;
+            if (currentIndex < selectedQuestions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+    }
+
+    // 檢查答案核心邏輯
+    function checkAnswer() {
+        hasChecked = true;
+        const currentQ = selectedQuestions[currentIndex];
+        
+        let correctIdx = currentQ.correct;
+        if (typeof correctIdx === 'undefined') {
+            const letter = currentQ.answer || "A";
+            correctIdx = letter.charCodeAt(0) - 65;
+        }
+
+        const buttons = document.querySelectorAll(".option-btn");
+        
+        buttons.forEach((btn, idx) => {
+            btn.disabled = true;
+            btn.classList.remove("selected");
+            if (idx === correctIdx) {
+                btn.classList.add("correct");
+            }
+            if (idx === userSelectedIndex && idx !== correctIdx) {
+                btn.classList.add("incorrect");
+            }
+        });
+
+        if (userSelectedIndex === correctIdx) {
+            currentScore++;
+            document.getElementById("current-score-info").innerText = `目前得分：${currentScore}`;
+        }
+
+        const expText = currentQ.exp || currentQ.explanation || "本題暫無詳細解析。";
+        document.getElementById("explanation-text").innerText = expText;
+        document.getElementById("explanation-container").style.display = "block";
+
+        const actionBtn = document.getElementById("action-btn");
+        if (currentIndex === selectedQuestions.length - 1) {
+            actionBtn.innerText = "查看最終自學報告";
+        } else {
+            actionBtn.innerText = "下一題 ➡️";
+        }
+    }
+
+    // 結算報告與動態百分比等級評語
+    function showResults() {
+        document.getElementById("quiz-screen").style.display = "none";
+        document.getElementById("result-screen").style.display = "block";
+
+        // 修改證書抬頭：清晰呈現班別(內含題型)、學號、姓名
+        document.getElementById("cert-student-name").innerHTML = `
+            📋 <strong>文言範文自學完成證明</strong><br>
+            <span style="color:#2c3e50; font-size:1.1rem;">
+                班別：${studentClass} &nbsp;&nbsp; 學號：${studentId}<br>
+                <span style="color:#3498db; font-size:1.5rem; font-weight:bold;">學生：${studentName}</span>
+            </span>
+        `;
+        document.getElementById("final-score").innerText = currentScore;
+        
+        // 自動傳送拆分後的資料
+        uploadResult(studentClass, studentName, studentId, currentScore, selectedQuestions.length);
+
+        const commentBox = document.getElementById("teacher-comment");
+        
+        // 核心改動：改為依據百分比計算等級，完美相容 15 題或 20 題的模式
+        const scorePercentage = (currentScore / selectedQuestions.length) * 100;
+        
+        if (scorePercentage >= 90) { // 相當於 20題拿18題以上
+            commentBox.innerHTML = "👑 <strong>【範文達人 · 絕頂聰明】</strong><br><br>太棒了！你對此指定範文選取部分的考點均能融會貫通。這份扎實的文言底蘊，能讓你在 DSE 卷一甲部中如魚得水。請繼續保持高水準，直奔 5**！";
+            commentBox.style.borderColor = "#fbbf24"; 
+            commentBox.style.backgroundColor = "#fffbeb";
+            commentBox.style.color = "#92400e";
+        } else if (scorePercentage >= 70) { // 相當於 20題拿14-17題
+            commentBox.innerHTML = "🌤️ <strong>【思維清晰 · 穩奪佳績】</strong><br><br>表現不錯！你已經精準掌握了此分類範圍的大部分核心考點，概念相當清晰。只要再多加留意個別細節的微細辨析，補足盲點後滿分就近在咫尺了！";
+            commentBox.style.borderColor = "#38bdf8"; 
+            commentBox.style.backgroundColor = "#f0f9ff";
+            commentBox.style.color = "#0369a1";
+        } else if (scorePercentage >= 50) { // 相當於 20題拿10-13題
+            commentBox.innerHTML = "🌧️ <strong>【初窺門徑 · 仍需努力】</strong><br><br>概念有些迷濛喔！你目前雖具備基本的語感和課文印象，但在部分進階題型（如深層寓意或精準字詞）上的熟練度仍有進步空間。建議翻閱課堂筆記複習後重新挑戰！";
+            commentBox.style.borderColor = "#64748b";
+            commentBox.style.backgroundColor = "#f8fafc";
+            commentBox.style.color = "#334155";
+        } else { // 相當於 20題拿9題以下
+            commentBox.innerHTML = "🌪️ <strong>【根基未穩 · 重新出發】</strong><br><br>這次測驗遇到了不小的挑戰呢！這代表你對選定範圍的文句翻譯和段落大意還不夠熟悉。別氣餒，12 篇文言字詞與手法需要時間累積，建議定下心來重新研讀課文，一定能大有進步！";
+            commentBox.style.borderColor = "#f87171";
+            commentBox.style.backgroundColor = "#fef2f2";
+            commentBox.style.color = "#991b1b";
+        }
+    }
+
+    // 發送 POST 請求
+    function uploadResult(cls, name, sId, score, total) {
+        if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("請將這段文字替換")) {
+            document.getElementById("upload-status-text").innerText = "⚠️ 未設定後端系統網址，成績未同步。";
+            return;
+        }
+
+        const payload = {
+            studentClass: cls,
+            studentName: name,
+            studentId: sId,
+            score: score,
+            totalQuestions: total
+        };
+
+        fetch(GAS_WEB_APP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            document.getElementById("upload-status-text").innerText = "✅ 成績已成功同步至老師的系統！";
+            document.getElementById("upload-status-text").style.color = "#276749";
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            document.getElementById("upload-status-text").innerText = "❌ 網路同步失敗，請保留此畫面截圖。";
+            document.getElementById("upload-status-text").style.color = "#e53e3e";
+        });
+    }
+</script>
+</body>
+</html>
